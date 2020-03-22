@@ -3,7 +3,7 @@ import sys
 import base64
 import io
 from threading import Thread
-
+import requests
 import cv2
 from PIL import Image
 import numpy as np
@@ -18,6 +18,7 @@ from new_case import NewCase
 from train_model import train_model
 import match_faces
 from db_operations import add_to_confirmed, fetch_confirmed_cases, delete_from_pending, fetch_pending_cases_by_unique_id
+from api import sendFoundSMS,sendFoundMail
 
 
 class window(QMainWindow):
@@ -88,8 +89,10 @@ class window(QMainWindow):
         This method will be automatically called whenever any match is found.
         That case will be deleted from pending.
         """
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        im_pil = Image.fromarray(img)
+        #img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        im_pil = Image.fromarray(image)
+        imagePath = "FoundImages/"+caseId+mobile+".jpeg"
+        im_pil.save(imagePath)
         buff = io.BytesIO()
         im_pil.save(buff, format="JPEG")
         img_str = str(base64.b64encode(buff.getvalue()))
@@ -101,6 +104,7 @@ class window(QMainWindow):
         Image is converted ot numpy array.
         """
         img = img[1:]
+
         img = np.array(Image.open(io.BytesIO(base64.b64decode(img))))
         return img
 
@@ -124,10 +128,11 @@ class window(QMainWindow):
                 mobile = value.get('mobile')
                 father_name = value.get('father_name')
                 age = value.get('age')
-                location = value.get('location', ' ')
-                date = value.get('date', ' ')
-                image = value.get('image', ' ')
+                location = value.get('location')
+                date = value.get('date')
+                image = value.get('image')
                 image = self.decode_base64(image)
+                
 
                 item = QStandardItem("  Name                   : " + name +
                                      "\n  Father's Name    : " + father_name +
@@ -178,9 +183,10 @@ class window(QMainWindow):
                     father_name = str(result.get('father_name'))
                     age = str(result.get('age'))
                     email = str(result.get('email'))
-
+                    
                     self.confirm(label_,caseId, name, father_name, age, mobile, email, location, image)
 
+                    sendFoundSMS(caseId,father_name,mobile,location)
 
                     item = QStandardItem("  Name                   : " + name +
                                          "\n  Father's Name    : " + father_name +
@@ -193,6 +199,10 @@ class window(QMainWindow):
                                          image.shape[1] * 3,
                                          QtGui.QImage.Format_RGB888)
                     icon = QPixmap(image)
+
+                    imagePath = "FoundImages/"+caseId+mobile+".jpeg"
+
+                    sendFoundMail(imagePath,caseId,father_name,email,location)
 
                     item.setIcon(QIcon(icon))
                     model.appendRow(item)

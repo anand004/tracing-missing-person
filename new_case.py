@@ -10,6 +10,7 @@ import PIL
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QPushButton
 from PyQt5.QtWidgets import QInputDialog, QLabel, QLineEdit, QMessageBox
+from api import sendCaseRegistrationEmail,sendCaseRegistrationMessage
 
 import face_encoding
 import db_operations
@@ -251,6 +252,8 @@ class NewCase(QMainWindow):
                                             self.email) is True:
                 QMessageBox.about(self, "Success", "Image is added to DB. \n\
                                 You can close the window")
+                sendCaseRegistrationEmail(self.caseId,self.father_name,self.email)
+                sendCaseRegistrationMessage(self.caseId,self.father_name,self.mob)
             else:
                 QMessageBox.about(self, "Error", "Something went wrong. \
                                 Please try again")
