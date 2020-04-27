@@ -18,7 +18,7 @@ def get_base64_form(image):
 def upload_image(base64_image):
     try:
         root = db.reference('user')
-        user_upload = root.child('manual_upload').child('case2').set(
+        user_upload = root.child('manual_upload').child('case3').set(
             {'image': str(base64_image),
              'location': "gurgaon"
              })
@@ -29,7 +29,7 @@ def upload_image(base64_image):
 
 
 if __name__ == '__main__':
-    file_name = "image.jpg"
+    file_name = "img_final2.jpg"
     img = Image.open(file_name)
     base64_image = get_base64_form(img)
     result = upload_image(base64_image)

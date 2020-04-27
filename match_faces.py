@@ -47,6 +47,7 @@ def match():
         return "None"
     matched = []
     data = fetch_faces_fromDB()
+    #print(data[0][1])
     for image, key_pts, location in data:
         closest_distances = clf.kneighbors(key_pts)
         is_recognized = [closest_distances[0][0][0] <= 0.5]
